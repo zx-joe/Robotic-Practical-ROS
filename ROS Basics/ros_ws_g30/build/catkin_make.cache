@@ -1,0 +1,2 @@
+ros_basics_2019
+-DCATKIN_DEVEL_PREFIX=/home/vpapaspy/ros_ws_g30/devel -DCMAKE_INSTALL_PREFIX=/home/vpapaspy/ros_ws_g30/install -G Unix Makefiles

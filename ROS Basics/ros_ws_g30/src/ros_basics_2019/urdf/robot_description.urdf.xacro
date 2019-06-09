@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="https://www.ros.org/wiki/xacro" name="G30">
+
+    <xacro:include filename="$(find ros_basics_2019)/urdf/macros.xacro" />
+    <xacro:include filename="$(find ros_basics_2019)/urdf/materials.xacro" />
+
+
+
+
+
+    <!-- Design your robot here -->
+    <xacro:arg name="mass" default="0.200"/>
+    <xacro:property name="mass_p" value="$(arg mass)"/>
+    <xacro:property name="body_mass" value="${mass_p * 0.80}"/>
+    <xacro:property name="wheel_mass" value="${mass_p * 0.10}"/>
+    <xacro:property name="wheel_rad" value="0.024"/>
+    <xacro:property name="wheel_width" value="0.020"/>
+
+
+    <link name="base_link">
+        <inertial>
+            <mass value="${body_mass}"/>
+            <xacro:box_inertia m="${body_mass}" x="0.055" y="0.112" z="0.045" />
+        </inertial>
+
+        <collision name="collision body">
+            <origin xyz="${-0.11*0.25} 0 0.027"/>
+            <geometry>
+                <box size="0.055 0.112 0.045"/>
+            </geometry>
+        </collision> 
+
+        <visual name="visual body">
+            <origin xyz="${-0.11*0.25} 0 ${0.045 - 2*0.009}"/>
+            <geometry>
+                <box size="0.055 0.112 0.045"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+
+        <collision name="collision caster">
+            <origin xyz="0.035 0 0.009"/>
+            <geometry>
+                <sphere radius="0.009"/>
+            </geometry>
+        </collision>
+
+        <visual name="visual caster">
+            <origin xyz="0.045 0 0.009"/>
+            <geometry>
+                <sphere radius="0.009"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+    </link>
+
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="right_wheel_link"/>
+        <axis xyz = "0 1 0"/>
+        <origin xyz = "${- 0.11/2 + wheel_rad } -0.047 ${wheel_rad}"/>
+    </joint>
+
+    <link name="right_wheel_link">
+        <inertial>
+            <mass value="${wheel_mass}"/>
+            <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_rad}" h="${wheel_width}"/>
+        </inertial>
+
+        <collision name="collision right_wheel">
+            <origin xyz="0 0 0"/>
+            <geometry>
+                <cylinder radius="${wheel_rad}" length="${wheel_width}"/>
+            </geometry>
+        </collision>
+
+        <visual name="visual right_wheel">
+            <origin xyz="0 0 0" rpy="1.57075 0 0"/>
+            <geometry>
+                <cylinder radius="${wheel_rad}" length="${wheel_width}"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+
+    </link>
+
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="left_wheel_link"/>
+        <axis xyz = "0 1 0"/>
+        <origin xyz = "${- 0.11/2 + wheel_rad } 0.047 ${wheel_rad}"/>
+    </joint>
+
+    <link name="left_wheel_link">
+        <inertial>
+            <mass value="${wheel_mass}"/>
+            <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_rad}" h="${wheel_width}"/>
+        </inertial>
+
+        <collision name="collision left_wheel">
+            <origin xyz="0 0 0"/>
+            <geometry>
+                <cylinder radius="${wheel_rad}" length="${wheel_width}"/>
+            </geometry>
+        </collision>
+
+        <visual name="visual left_wheel">
+            <origin xyz="0 0 0" rpy="1.57075 0 0"/>
+            <geometry>
+                <cylinder radius="${wheel_rad}" length="${wheel_width}"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+
+    </link>
+
+
+
+	<link name="head">
+	    <visual>
+	      <geometry>
+		 <cylinder length="0.045" radius="0.055"/>
+	      </geometry>
+	      <material name="white">
+		  <color rgba="1 1 1 0.5"/>
+	      </material>
+	    </visual>
+	</link>
+
+
+	  <joint name="tobox" type="fixed">
+	    <parent link="base_link"/>
+	    <child link="head"/>
+	    <origin xyz="0 0 0.027"/>
+	  </joint>
+
+    <!-- Below you will find samples of gazebo plugins you may want to use. -->
+    <!-- These should be adapted to your robot's design -->
+    <gazebo reference="YOUR_SENSOR_LINK">  
+        <sensor type="ray" name="laser_right">
+            <pose>0 0 0 0 0 0</pose>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>13</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-1.571</min_angle>
+                        <max_angle>1.571</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <!-- You can edit adapt these to your robot's size -->
+                    <min>0.0005</min>
+                    <max>0.04</max>
+                    <resolution>0.0001</resolution>
+                </range>
+            </ray>
+            <plugin name="laser" filename="libgazebo_ros_laser.so" >
+                <topicName>YOUR_ROBOT_LASER/scan</topicName>
+                <frameName>YOUR_ROBOT_LASER_LINK</frameName>
+            </plugin>
+            <always_on>1</always_on>
+            <update_rate>10</update_rate>
+            <visualize>true</visualize>
+        </sensor>
+    </gazebo> 
+
+    <gazebo>
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>20</updateRate>
+            <leftJoint>left_wheel_joint</leftJoint>
+            <rightJoint>right_wheel_joint</rightJoint>
+            <wheelSeparation>0.094</wheelSeparation>
+            <wheelDiameter>0.044</wheelDiameter>
+            <!-- <wheelTorque>ZZZ</wheelTorque> -->
+
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+
+            <robotBaseFrame>base_link</robotBaseFrame>
+        </plugin>
+    </gazebo>
+
+</robot>

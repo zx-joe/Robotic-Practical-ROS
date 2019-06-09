@@ -1,0 +1,8 @@
+prefix=/home/vpapaspy/ros_ws_g30/devel
+
+Name: ros_basics_2019
+Description: Description of ros_basics_2019
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/vpapaspy/ros_ws_g30/devel/lib 
+Requires: 

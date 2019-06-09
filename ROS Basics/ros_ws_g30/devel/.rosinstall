@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/vpapaspy/ros_ws_g30/devel/setup.sh
